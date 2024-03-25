@@ -1,0 +1,44 @@
+pipeline SongPipeline {
+    block SongFileExtractor oftype LocalFileExtractor {
+        filePath: "C:/Users/helen/OneDrive/UNI/Project/Data Diffs/pipelines/spotify_top_songs_audio_features.csv";
+    }
+    block SongFileInterpreter oftype TextFileInterpreter {}
+    block SongCSVInterpreter oftype CSVInterpreter { 
+        delimiter: ",";
+    }
+    block DataSelector oftype CellRangeSelector {
+        select: range A1:S1000;
+    }
+    block ColumnDeleter oftype ColumnDeleter {
+        delete: [column A, column E, column G, column H, column I, column J, column K, column L, column M, column N, column Q];
+    }
+    block SomeRowDeleter oftype RowDeleter {
+        delete: [row 5, row 6, row 10, row 11, row 12];
+    }
+    block SongInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "artist_names" oftype text,
+            "track_name" oftype text,
+            "source" oftype text,
+            "mode" oftype text,
+            "loudness" oftype decimal,
+            "tempo" oftype decimal,
+            "weeks_on_chart" oftype decimal,
+            "streams" oftype decimal 
+        ];
+    }
+    block DatabaseLoader oftype SQLiteLoader { 
+        table: "songs"; 
+        file: "songs3.sqlite"; 
+    }
+    
+    SongFileExtractor
+        ->SongFileInterpreter
+        ->SongCSVInterpreter
+        ->DataSelector
+        ->ColumnDeleter
+        ->SomeRowDeleter
+        ->SongInterpreter
+        ->DatabaseLoader
+;}
